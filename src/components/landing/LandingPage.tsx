@@ -139,11 +139,13 @@ export default function LandingPage() {
             {/* Text */}
             <div className="relative z-10 flex flex-1 flex-col items-center px-6 py-10 text-center md:items-start md:py-16 md:text-left">
               <motion.h1 variants={fadeUp} custom={0.15}
-                className="font-display text-4xl leading-tight text-white drop-shadow-[0_0_30px_rgba(74,222,128,0.4)] md:text-6xl lg:text-7xl"
+                className="font-display text-4xl leading-tight drop-shadow-[0_0_30px_rgba(74,222,128,0.4)] md:text-6xl lg:text-7xl"
               >
-                <span className="text-white">MCFIRE</span>
-                <br />
-                <span className="text-emerald-400">.BOX</span>
+                <span className="relative inline-block overflow-hidden whitespace-nowrap">
+                  <span className="text-white">MCFIRE</span>
+                  <span className="text-emerald-400">.BOX</span>
+                  <span className="shine-sweep pointer-events-none absolute inset-0" />
+                </span>
               </motion.h1>
               <motion.div variants={fadeUp} custom={0.2} className="mt-3 flex gap-2">
                 <span className="rounded-full border border-[#84cc16]/40 bg-[#84cc16]/10 px-3 py-1 text-sm font-semibold text-[#84cc16]">BoxSMP</span>
