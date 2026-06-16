@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Get site settings",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {"site_title": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

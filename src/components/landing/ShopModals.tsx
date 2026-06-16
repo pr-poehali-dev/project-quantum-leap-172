@@ -87,12 +87,12 @@ export function ShopModal({
                 )}
                 <div className="flex items-center gap-3">
                   <div
-                    className="flex h-11 w-11 items-center justify-center rounded-lg transition-transform group-hover:scale-110"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-transform group-hover:scale-110"
                     style={{ background: `${p.color}22`, color: p.color }}
                   >
                     <Icon name={p.icon} size={22} />
                   </div>
-                  <span className="font-display text-lg font-bold text-white">{p.name}</span>
+                  <span className="min-w-0 text-sm font-bold text-white leading-tight">{p.name}</span>
                 </div>
                 <p className="mt-2 flex-1 text-sm text-neutral-400">{p.description}</p>
                 <div className="mt-3 flex items-center justify-between">
