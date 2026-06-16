@@ -137,11 +137,11 @@ export default function LandingPage() {
             </motion.div>
 
             {/* Text */}
-            <div className="relative z-10 flex flex-1 flex-col items-center px-6 py-10 text-center md:items-start md:py-16 md:text-left">
+            <div className="relative z-10 flex min-w-0 flex-1 flex-col items-center px-6 py-10 text-center md:items-start md:py-16 md:text-left">
               <motion.h1 variants={fadeUp} custom={0.15}
-                className="font-display text-4xl leading-tight drop-shadow-[0_0_30px_rgba(74,222,128,0.4)] md:text-6xl lg:text-7xl"
+                className="w-full font-display text-3xl leading-tight drop-shadow-[0_0_30px_rgba(74,222,128,0.4)] sm:text-4xl md:text-5xl lg:text-6xl"
               >
-                <span className="relative inline-block overflow-hidden whitespace-nowrap">
+                <span className="relative inline-block max-w-full overflow-hidden whitespace-nowrap">
                   <span className="text-white">MCFIRE</span>
                   <span className="text-emerald-400">.BOX</span>
                   <span className="shine-sweep pointer-events-none absolute inset-0" />
