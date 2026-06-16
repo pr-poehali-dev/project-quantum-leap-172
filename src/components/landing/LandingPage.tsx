@@ -75,7 +75,7 @@ export default function LandingPage() {
           {/* Logo */}
           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex shrink-0 items-center gap-2">
             <img src={LOGO_IMG} alt="MCFIRE.BOX" className="h-9 w-9 rounded-lg object-cover" />
-            <span className="font-display text-sm font-bold text-white">MCFIRE.BOX</span>
+            <span className="hidden font-display text-sm font-bold text-white xs:block sm:block">MCFIRE.BOX</span>
           </button>
 
           {/* Nav */}
@@ -190,15 +190,15 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.08 }}
               onClick={s.click}
-              className={`flex cursor-pointer items-center gap-4 rounded-xl border bg-[#07130a] p-4 transition-all hover:border-emerald-500/50 hover:bg-[#0a1d0d] ${s.highlight ? 'border-emerald-400/60 bg-emerald-500/10' : 'border-[#1a3a1a]'}`}
+              className={`flex cursor-pointer items-center gap-3 overflow-hidden rounded-xl border bg-[#07130a] p-3 transition-all hover:border-emerald-500/50 hover:bg-[#0a1d0d] md:gap-4 md:p-4 ${s.highlight ? 'border-emerald-400/60 bg-emerald-500/10' : 'border-[#1a3a1a]'}`}
             >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10">
-                <Icon name={s.icon} size={22} className="text-emerald-400" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-500/20 bg-emerald-500/10 md:h-12 md:w-12">
+                <Icon name={s.icon} size={20} className="text-emerald-400" />
               </div>
-              <div className="min-w-0">
-                <div className="text-xs text-neutral-400">{s.label}</div>
-                <div className="mt-0.5 truncate text-lg font-bold text-white">{s.highlight ? 'Скопировано!' : s.value}</div>
-                <div className="text-xs text-neutral-500">{s.sub}</div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-xs text-neutral-400">{s.label}</div>
+                <div className="truncate text-sm font-bold text-white md:text-base">{s.highlight ? 'Скопировано!' : s.value}</div>
+                <div className="truncate text-xs text-neutral-500">{s.sub}</div>
               </div>
             </motion.div>
           ))}
@@ -227,7 +227,7 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.07 }}
-                  className="group flex flex-col items-center rounded-2xl border border-[#1a3a1a] bg-[#07130a] p-5 text-center transition-all hover:-translate-y-2 hover:border-emerald-500/40 hover:shadow-[0_8px_40px_-8px_rgba(74,222,128,0.3)]"
+                  className="group flex flex-col items-center overflow-hidden rounded-2xl border border-[#1a3a1a] bg-[#07130a] p-4 text-center transition-all hover:-translate-y-2 hover:border-emerald-500/40 hover:shadow-[0_8px_40px_-8px_rgba(74,222,128,0.3)] md:p-5"
                 >
                   {/* Crown emoji per rank */}
                   <div className="mb-3 text-5xl transition-transform group-hover:scale-110">
@@ -256,7 +256,7 @@ export default function LandingPage() {
 
         {/* ── FEATURES ── */}
         <section className="mt-10 mb-12">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {FEATURES.map((f, i) => (
               <motion.div
                 key={f.label}
@@ -264,14 +264,14 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.06 }}
-                className="flex items-center gap-3 rounded-xl border border-[#1a3a1a] bg-[#07130a] p-4 transition-all hover:border-emerald-500/30 hover:bg-[#0a1d0d]"
+                className="flex items-center gap-3 overflow-hidden rounded-xl border border-[#1a3a1a] bg-[#07130a] p-4 transition-all hover:border-emerald-500/30 hover:bg-[#0a1d0d]"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400">
                   <Icon name={f.icon} size={20} />
                 </div>
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold text-emerald-300 truncate">{f.label}</div>
-                  <div className="text-xs text-neutral-500 truncate">{f.sub}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-semibold text-emerald-300">{f.label}</div>
+                  <div className="truncate text-xs text-neutral-500">{f.sub}</div>
                 </div>
               </motion.div>
             ))}
