@@ -8,7 +8,7 @@ import { products, SERVER_IP, SERVER_VERSION } from './shop-data'
 import { ShopModal, CartModal, RulesModal, WipModal } from './ShopModals'
 
 const HERO_IMG =
-  'https://cdn.poehali.dev/projects/2e83ccfa-ea22-4097-88e8-31abba7dbd2b/files/5bd50bd8-6eab-4875-b4c7-aee4b0d5f408.jpg'
+  'https://cdn.poehali.dev/projects/2e83ccfa-ea22-4097-88e8-31abba7dbd2b/bucket/c9bc29d5-607e-4f60-aca7-ff80bcb975a6.png'
 
 const NAV = ['Главная', 'Донат', 'Привилегии', 'Правила', 'Корзина', 'Поддержка']
 
@@ -55,10 +55,8 @@ export default function LandingPage() {
       <header className="fixed top-0 inset-x-0 z-40 border-b border-emerald-500/15 bg-[#04100a]/70 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-8">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500 text-black">
-              <Icon name="Box" size={20} />
-            </div>
-            <span className="font-display text-sm text-white">EmeraldCraft</span>
+            <img src={HERO_IMG} alt="MCFIRE.BOX" className="h-9 w-9 rounded-lg object-cover" />
+            <span className="font-display text-sm text-white">MCFIRE.BOX</span>
           </div>
           <nav className="hidden items-center gap-6 lg:flex">
             {NAV.map((item) => (
@@ -109,11 +107,11 @@ export default function LandingPage() {
         <section className="relative flex min-h-screen flex-col items-center justify-center px-4 pt-24 text-center md:px-8">
           <motion.img
             src={HERO_IMG}
-            alt="Minecraft hero"
+            alt="MCFIRE.BOX"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
-            className="mb-6 h-44 w-44 rounded-2xl object-cover shadow-[0_0_70px_-10px_rgba(16,185,129,0.7)] md:h-56 md:w-56"
+            className="mb-6 h-44 w-44 rounded-full object-cover shadow-[0_0_80px_-5px_rgba(100,220,50,0.8)] md:h-56 md:w-56"
           />
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -130,15 +128,25 @@ export default function LandingPage() {
             transition={{ delay: 0.3 }}
             className="font-display text-2xl leading-relaxed text-white text-glow md:text-4xl lg:text-5xl"
           >
-            EmeraldCraft
+            MCFIRE.BOX
           </motion.h1>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.38 }}
+            className="mt-3 flex items-center justify-center gap-3"
+          >
+            <span className="rounded-full border border-[#84cc16]/40 bg-[#84cc16]/10 px-3 py-1 text-sm font-semibold text-[#84cc16]">BoxSMP</span>
+            <span className="text-neutral-600">·</span>
+            <span className="rounded-full border border-sky-500/40 bg-sky-500/10 px-3 py-1 text-sm font-semibold text-sky-300">Skyblock</span>
+          </motion.div>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mt-6 max-w-2xl text-lg text-neutral-300 md:text-xl"
+            className="mt-5 max-w-2xl text-lg text-neutral-300 md:text-xl"
           >
-            Лучший выживание-сервер Minecraft с защитой приватов, ивентами и дружным комьюнити.
+            Лучший Minecraft-сервер с режимами BoxSMP и Skyblock — приваты, ивенты и дружное комьюнити.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -180,7 +188,7 @@ export default function LandingPage() {
                 className="rounded-2xl border border-emerald-500/20 bg-black/30 p-5 backdrop-blur-sm"
               >
                 <Icon name={s.icon} size={22} className="mx-auto mb-2 text-emerald-400" />
-                <div className="truncate font-bold text-white">{s.value}</div>
+                <div className="break-all font-bold text-white">{s.value}</div>
                 <div className="text-sm text-neutral-400">{s.label}</div>
               </motion.div>
             ))}
@@ -283,10 +291,8 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl">
             <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
               <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500 text-black">
-                  <Icon name="Box" size={20} />
-                </div>
-                <span className="font-display text-sm text-white">EmeraldCraft</span>
+                <img src={HERO_IMG} alt="MCFIRE.BOX" className="h-9 w-9 rounded-lg object-cover" />
+                <span className="font-display text-sm text-white">MCFIRE.BOX</span>
               </div>
               <div className="flex gap-3">
                 {[
@@ -306,7 +312,7 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-emerald-500/10 pt-6 text-sm text-neutral-500 md:flex-row">
-              <span>© 2026 EmeraldCraft. Все права защищены.</span>
+              <span>© 2026 MCFIRE.BOX. Все права защищены.</span>
               <div className="flex gap-4">
                 <button onClick={() => setWipOpen(true)} className="transition-colors hover:text-emerald-400">
                   Правила оплаты

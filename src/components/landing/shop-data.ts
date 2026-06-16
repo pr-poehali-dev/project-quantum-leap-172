@@ -1,6 +1,6 @@
 import type { Product } from "@/types"
 
-export const SERVER_IP = "play.emeraldcraft.ru"
+export const SERVER_IP = "mcfire.box"
 export const SERVER_VERSION = "1.20.4"
 
 export const products: Product[] = [

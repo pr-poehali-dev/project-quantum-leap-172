@@ -5,7 +5,7 @@ import { products, rules } from "./shop-data"
 import type { Product, CartItem } from "@/types"
 
 const HERO_CHAR =
-  "https://cdn.poehali.dev/projects/2e83ccfa-ea22-4097-88e8-31abba7dbd2b/files/5bd50bd8-6eab-4875-b4c7-aee4b0d5f408.jpg"
+  "https://cdn.poehali.dev/projects/2e83ccfa-ea22-4097-88e8-31abba7dbd2b/bucket/c9bc29d5-607e-4f60-aca7-ff80bcb975a6.png"
 
 const overlay = {
   hidden: { opacity: 0 },
