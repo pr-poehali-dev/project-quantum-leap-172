@@ -121,39 +121,6 @@ def handler(event: dict, context) -> dict:
                 tok = make_token(row[0])
                 return resp(200, {'token': tok, 'id': row[0], 'username': username, 'role': row[2], 'privilege': row[3]})
 
-            # action == 'setup' → установить пароль Creator (только если хэш дефолтный или пустой)
-            if action == 'setup':
-                new_username = (body.get('username') or '').strip()
-                new_password = body.get('password') or ''
-                setup_key    = body.get('setup_key') or ''
-                if len(new_password) < 6:
-                    return resp(400, {'error': 'Пароль минимум 6 символов'})
-                if not new_username or len(new_username) < 3:
-                    return resp(400, {'error': 'Ник минимум 3 символа'})
-                # Проверяем секретный ключ настройки (хранится в env или дефолт)
-                expected_key = os.environ.get('SETUP_KEY', 'mcfire-setup-2026')
-                if setup_key != expected_key:
-                    return resp(403, {'error': 'Неверный ключ настройки'})
-                pw_hash = hash_password(new_password)
-                with conn.cursor() as cur:
-                    # Обновляем первого creator
-                    cur.execute(
-                        "UPDATE users SET username=%s, password_hash=%s WHERE role='creator' AND id=(SELECT id FROM users WHERE role='creator' ORDER BY id LIMIT 1) RETURNING id",
-                        (new_username, pw_hash)
-                    )
-                    row = cur.fetchone()
-                    if not row:
-                        # Создаём нового creator если не существует
-                        cur.execute(
-                            "INSERT INTO users (username, password_hash, role) VALUES (%s,%s,'creator') RETURNING id",
-                            (new_username, pw_hash)
-                        )
-                        row = cur.fetchone()
-                    conn.commit()
-                    uid = row[0]
-                tok = make_token(uid)
-                return resp(200, {'token': tok, 'id': uid, 'username': new_username, 'role': 'creator', 'privilege': None, 'setup': True})
-
             return resp(400, {'error': 'Неизвестное действие'})
 
         # PUT → выдача роли (только creator)
