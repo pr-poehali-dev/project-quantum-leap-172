@@ -1,5 +1,4 @@
 import { ReactNode } from 'react'
-import { Squares } from "./squares-background"
 import { Particles } from "./Particles"
 
 interface LayoutProps {
@@ -8,19 +7,13 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <div className="dark h-screen overflow-hidden bg-[#04100a] relative">
-      <div className="absolute inset-0 z-10 opacity-60">
-        <Squares
-          direction="diagonal"
-          speed={0.4}
-          squareSize={44}
-          borderColor="#0f3d2e"
-          hoverFillColor="#10b98133"
-        />
+    <div className="relative min-h-screen bg-[#050f07]">
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute left-[20%] top-[10%] h-[500px] w-[500px] rounded-full bg-emerald-500/5 blur-[120px]" />
+        <div className="absolute right-[10%] bottom-[20%] h-[400px] w-[400px] rounded-full bg-emerald-400/4 blur-[100px]" />
+        <Particles count={18} />
       </div>
-      <Particles />
-      <div className="pointer-events-none absolute inset-0 z-10 bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,0.18),transparent_55%)]" />
-      <div className="relative z-20 h-full">
+      <div className="relative z-10">
         {children}
       </div>
     </div>
