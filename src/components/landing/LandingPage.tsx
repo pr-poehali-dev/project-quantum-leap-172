@@ -14,7 +14,9 @@ import { StaffPanel } from './StaffPanel'
 import { HeroSlideshow } from './HeroSlideshow'
 import { DonateCarousel, type SectionKey } from './DonateCarousel'
 import { BattlePassModal } from './BattlePassModal'
+import { MobileNav } from './MobileNav'
 import { useAuth } from '@/hooks/useAuth'
+import { useComplaints } from '@/hooks/useComplaints'
 import { settingsApi, parseJSON, type SiteSettings, type Product } from '@/lib/api'
 import { isStaff } from '@/lib/permissions'
 
@@ -51,6 +53,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
 export default function LandingPage() {
   const cart = useCart()
   const { user, login, register, logout } = useAuth()
+  const newComplaints = useComplaints(user)
 
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SETTINGS)
   const [shopOpen,    setShopOpen]    = useState(false)
@@ -131,9 +134,14 @@ export default function LandingPage() {
             ))}
             {isStaff(user?.role) && (
               <button onClick={() => setStaffOpen(true)}
-                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-sky-400 transition-colors hover:bg-sky-500/10"
+                className="relative flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-sky-400 transition-colors hover:bg-sky-500/10"
               >
                 <Icon name="ShieldHalf" size={14} />Персонал
+                {newComplaints > 0 && (
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-0.5 text-[9px] font-bold text-white">
+                    {newComplaints}
+                  </span>
+                )}
               </button>
             )}
             {isAdmin && (
@@ -351,16 +359,44 @@ export default function LandingPage() {
       <BattlePassModal open={bpOpen} onClose={() => setBpOpen(false)} settings={siteSettings} user={user} onBuy={buyToCart} />
       <AuthModal   open={authOpen}    onClose={() => setAuthOpen(false)}   onLogin={login} onRegister={register} />
       <NewsModal   open={newsOpen}    onClose={() => setNewsOpen(false)}   user={user} />
-      {user && <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} user={user} onLogout={() => { logout(); setProfileOpen(false) }} />}
+      {user && (
+        <ProfileModal
+          open={profileOpen}
+          onClose={() => setProfileOpen(false)}
+          user={user}
+          onLogout={() => { logout(); setProfileOpen(false) }}
+          onOpenStaff={() => { setProfileOpen(false); setStaffOpen(true) }}
+          onOpenAdmin={() => { setProfileOpen(false); setAdminOpen(true) }}
+          onOpenPunishments={() => { setProfileOpen(false); setPunishOpen(true) }}
+        />
+      )}
       {user && isStaff(user.role) && <StaffPanel open={staffOpen} onClose={() => setStaffOpen(false)} user={user} />}
       {user && isAdmin && <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} currentUser={user} />}
+
+      {/* ── МОБИЛЬНОЕ МЕНЮ ── */}
+      <MobileNav
+        user={user}
+        cartCount={cart.count}
+        newComplaints={newComplaints}
+        onHome={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        onDonate={() => setDonateOpen(true)}
+        onNews={() => setNewsOpen(true)}
+        onRules={() => setRulesOpen(true)}
+        onPunish={() => setPunishOpen(true)}
+        onTickets={() => window.open('https://t.me/', '_blank')}
+        onCart={() => setCartOpen(true)}
+        onProfile={() => setProfileOpen(true)}
+        onLogin={() => setAuthOpen(true)}
+        onStaff={() => setStaffOpen(true)}
+        onAdmin={() => setAdminOpen(true)}
+      />
 
       {/* ── ADD TO CART TOAST ── */}
       <AnimatePresence>
         {addedId && (
           <motion.div initial={{ opacity: 0, y: 40, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-xl border border-emerald-500/40 bg-[#07130a] px-5 py-3 text-sm font-semibold text-emerald-400 shadow-lg"
+            className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-xl border border-emerald-500/40 bg-[#07130a] px-5 py-3 text-sm font-semibold text-emerald-400 shadow-lg lg:bottom-6"
           >
             ✓ Добавлено в корзину
           </motion.div>
