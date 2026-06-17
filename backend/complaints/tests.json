@@ -1,8 +1,8 @@
 {
   "tests": [
     {
-      "name": "Get site settings",
-      "method": "GET",
+      "name": "Options preflight",
+      "method": "OPTIONS",
       "path": "/",
       "expectedStatus": 200,
       "bodyMatcher": "partial"

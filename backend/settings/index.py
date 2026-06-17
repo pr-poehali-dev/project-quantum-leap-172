@@ -1,6 +1,7 @@
-"""Настройки сайта: получение и обновление (только creator)."""
-import json, os
+"""Настройки сайта: получение, обновление (creator) и загрузка изображений (admin/creator)."""
+import json, os, base64, uuid
 import psycopg2
+import boto3
 
 CORS = {
     'Access-Control-Allow-Origin': '*',
@@ -8,8 +9,13 @@ CORS = {
     'Access-Control-Allow-Headers': 'Content-Type, X-Session-Token',
 }
 
+ALLOWED = {'image/png': 'png', 'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif'}
+MAX_BYTES = 5 * 1024 * 1024
+
+
 def get_conn():
     return psycopg2.connect(os.environ['DATABASE_URL'])
+
 
 def get_user_by_token(conn, token: str):
     if not token or ':' not in token:
@@ -24,6 +30,11 @@ def get_user_by_token(conn, token: str):
         if row:
             return {'id': row[0], 'username': row[1], 'role': row[2]}
     return None
+
+
+def resp(code, data):
+    return {'statusCode': code, 'headers': CORS, 'body': json.dumps(data)}
+
 
 def handler(event: dict, context) -> dict:
     if event.get('httpMethod') == 'OPTIONS':
@@ -48,13 +59,42 @@ def handler(event: dict, context) -> dict:
                 cur.execute("SELECT key, value FROM site_settings")
                 rows = cur.fetchall()
             settings = {r[0]: r[1] for r in rows}
-            return {'statusCode': 200, 'headers': CORS, 'body': json.dumps(settings)}
+            return resp(200, settings)
+
+        # POST — загрузка изображения в S3 (admin/creator)
+        if method == 'POST':
+            user = get_user_by_token(conn, token)
+            if not user or user['role'] not in ('admin', 'creator'):
+                return resp(403, {'error': 'Нет доступа'})
+            content_type = body.get('content_type', '')
+            data_b64 = body.get('data', '')
+            if content_type not in ALLOWED:
+                return resp(400, {'error': 'Поддерживаются PNG, JPG, WEBP, GIF'})
+            if ',' in data_b64:
+                data_b64 = data_b64.split(',', 1)[1]
+            try:
+                raw = base64.b64decode(data_b64)
+            except Exception:
+                return resp(400, {'error': 'Ошибка декодирования файла'})
+            if len(raw) > MAX_BYTES:
+                return resp(400, {'error': 'Файл больше 5 МБ'})
+            ext = ALLOWED[content_type]
+            key = f"site/{uuid.uuid4().hex}.{ext}"
+            s3 = boto3.client(
+                's3',
+                endpoint_url='https://bucket.poehali.dev',
+                aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+                aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+            )
+            s3.put_object(Bucket='files', Key=key, Body=raw, ContentType=content_type)
+            url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{key}"
+            return resp(200, {'url': url})
 
         # PUT — обновить настройки (только creator)
         if method == 'PUT':
             user = get_user_by_token(conn, token)
             if not user or user['role'] != 'creator':
-                return {'statusCode': 403, 'headers': CORS, 'body': json.dumps({'error': 'Нет доступа'})}
+                return resp(403, {'error': 'Нет доступа'})
             with conn.cursor() as cur:
                 for key, value in body.items():
                     cur.execute(
@@ -62,8 +102,8 @@ def handler(event: dict, context) -> dict:
                         (key, str(value))
                     )
                 conn.commit()
-            return {'statusCode': 200, 'headers': CORS, 'body': json.dumps({'ok': True})}
+            return resp(200, {'ok': True})
 
-        return {'statusCode': 404, 'headers': CORS, 'body': json.dumps({'error': 'Not found'})}
+        return resp(404, {'error': 'Not found'})
     finally:
         conn.close()

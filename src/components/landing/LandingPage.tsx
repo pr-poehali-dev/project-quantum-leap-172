@@ -3,13 +3,18 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Icon from '@/components/ui/icon'
 import { useCart } from './useCart'
 import { products } from './shop-data'
-import { ShopModal, CartModal, RulesModal } from './ShopModals'
+import { ShopModal, CartModal } from './ShopModals'
 import { AuthModal } from './AuthModal'
 import { ProfileModal } from './ProfileModal'
 import { NewsModal } from './NewsModal'
 import { AdminModal } from './AdminModal'
+import { RulesModalNew } from './RulesModalNew'
+import { DonateModal, type DonateSection } from './DonateModal'
+import { PunishmentsModal } from './PunishmentsModal'
+import { StaffPanel } from './StaffPanel'
 import { useAuth } from '@/hooks/useAuth'
 import { settingsApi, type SiteSettings } from '@/lib/api'
+import { isStaff } from '@/lib/permissions'
 
 const LOGO_IMG = 'https://cdn.poehali.dev/projects/2e83ccfa-ea22-4097-88e8-31abba7dbd2b/bucket/c9bc29d5-607e-4f60-aca7-ff80bcb975a6.png'
 const HERO_CHAR = 'https://cdn.poehali.dev/projects/2e83ccfa-ea22-4097-88e8-31abba7dbd2b/files/367989cc-e289-4e27-996f-13dd62749b4a.jpg'
@@ -58,8 +63,17 @@ export default function LandingPage() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [newsOpen,    setNewsOpen]    = useState(false)
   const [adminOpen,   setAdminOpen]   = useState(false)
+  const [donateOpen,  setDonateOpen]  = useState(false)
+  const [punishOpen,  setPunishOpen]  = useState(false)
+  const [staffOpen,   setStaffOpen]   = useState(false)
   const [copied,      setCopied]      = useState(false)
   const [addedId,     setAddedId]     = useState<string | null>(null)
+
+  const handleDonateGo = (s: DonateSection) => {
+    setDonateOpen(false)
+    if (s === 'unban') { setPunishOpen(true); return }
+    setShopOpen(true)
+  }
 
   useEffect(() => {
     settingsApi.get().then(setSiteSettings).catch(() => {})
@@ -99,11 +113,11 @@ export default function LandingPage() {
           <nav className="hidden items-center gap-1 lg:flex">
             {[
               { label: 'Главная',    icon: 'Home',       onClick: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
-              { label: 'Донат',      icon: 'Gift',       onClick: () => setShopOpen(true) },
-              { label: 'Привилегии', icon: 'Crown',      onClick: () => setShopOpen(true) },
               { label: 'Новости',    icon: 'Newspaper',  onClick: () => setNewsOpen(true) },
+              { label: 'Донат',      icon: 'Gift',       onClick: () => setDonateOpen(true) },
+              { label: 'Наказания',  icon: 'Gavel',      onClick: () => setPunishOpen(true) },
               { label: 'Правила',    icon: 'ScrollText', onClick: () => setRulesOpen(true) },
-              { label: 'Поддержка',  icon: 'Headphones', onClick: () => window.open('https://t.me/', '_blank') },
+              { label: 'Тикеты',     icon: 'Ticket',     onClick: () => window.open('https://t.me/', '_blank') },
             ].map(n => (
               <button key={n.label} onClick={n.onClick}
                 className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-neutral-300 transition-colors hover:bg-emerald-500/10 hover:text-emerald-400"
@@ -111,6 +125,13 @@ export default function LandingPage() {
                 <Icon name={n.icon} size={14} />{n.label}
               </button>
             ))}
+            {isStaff(user?.role) && (
+              <button onClick={() => setStaffOpen(true)}
+                className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-sky-400 transition-colors hover:bg-sky-500/10"
+              >
+                <Icon name="ShieldHalf" size={14} />Персонал
+              </button>
+            )}
             {isAdmin && (
               <button onClick={() => setAdminOpen(true)}
                 className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-amber-400 transition-colors hover:bg-amber-500/10"
@@ -200,7 +221,7 @@ export default function LandingPage() {
                 Лучший Minecraft-сервер с режимами BoxSMP и Skyblock — с уникальными возможностями!
               </motion.p>
               <motion.div variants={fadeUp} custom={0.3} className="mt-6 flex flex-wrap justify-center gap-3 md:justify-start">
-                <button onClick={() => setShopOpen(true)}
+                <button onClick={() => setDonateOpen(true)}
                   className="flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 font-bold text-black shadow-[0_0_20px_rgba(74,222,128,0.4)] transition-all hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(74,222,128,0.6)] active:scale-95"
                 >
                   <Icon name="Play" size={18} />Начать покупку<Icon name="ChevronRight" size={16} />
@@ -314,9 +335,10 @@ export default function LandingPage() {
               <p className="mt-1 text-xs text-neutral-600">© 2026 MCFIRE.BOX. Все права защищены.</p>
             </div>
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-neutral-400">
-              <button onClick={() => setRulesOpen(true)} className="transition-colors hover:text-emerald-400">Правила проекта</button>
-              <button onClick={() => setNewsOpen(true)}  className="transition-colors hover:text-emerald-400">Новости</button>
-              <button onClick={() => setShopOpen(true)}  className="transition-colors hover:text-emerald-400">Магазин</button>
+              <button onClick={() => setRulesOpen(true)}  className="transition-colors hover:text-emerald-400">Правила проекта</button>
+              <button onClick={() => setNewsOpen(true)}   className="transition-colors hover:text-emerald-400">Новости</button>
+              <button onClick={() => setDonateOpen(true)} className="transition-colors hover:text-emerald-400">Донат</button>
+              <button onClick={() => setPunishOpen(true)} className="transition-colors hover:text-emerald-400">Наказания</button>
             </div>
             <div className="flex items-center gap-2">
               <span className="mr-1 text-xs text-neutral-500">Мы в<br />соцсетях</span>
@@ -337,7 +359,7 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* ── MODALS ── */}
+      {/* ── ВСЕ МОДАЛЬНЫЕ ОКНА ── */}
       <ShopModal  open={shopOpen}  onClose={() => setShopOpen(false)}  onAdd={cart.add} />
       <CartModal
         open={cartOpen} onClose={() => setCartOpen(false)}
@@ -345,10 +367,13 @@ export default function LandingPage() {
         onRemove={cart.remove} onClear={cart.clear}
         onCheckout={() => { setCartOpen(false); setShopOpen(true) }}
       />
-      <RulesModal  open={rulesOpen}   onClose={() => setRulesOpen(false)} />
+      <RulesModalNew open={rulesOpen}  onClose={() => setRulesOpen(false)} />
+      <DonateModal   open={donateOpen} onClose={() => setDonateOpen(false)} onGo={handleDonateGo} />
+      <PunishmentsModal open={punishOpen} onClose={() => setPunishOpen(false)} user={user} />
       <AuthModal   open={authOpen}    onClose={() => setAuthOpen(false)}   onLogin={login} onRegister={register} />
       <NewsModal   open={newsOpen}    onClose={() => setNewsOpen(false)}   user={user} />
       {user && <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} user={user} onLogout={() => { logout(); setProfileOpen(false) }} />}
+      {user && isStaff(user.role) && <StaffPanel open={staffOpen} onClose={() => setStaffOpen(false)} user={user} />}
       {user && isAdmin && <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} currentUser={user} />}
 
       {/* ── ADD TO CART TOAST ── */}
