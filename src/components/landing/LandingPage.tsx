@@ -12,7 +12,7 @@ import { DonateModal, type DonateSection } from './DonateModal'
 import { PunishmentsModal } from './PunishmentsModal'
 import { StaffPanel } from './StaffPanel'
 import { HeroSlideshow } from './HeroSlideshow'
-import { DonateCarousel } from './DonateCarousel'
+import { DonateCarousel, type SectionKey } from './DonateCarousel'
 import { BattlePassModal } from './BattlePassModal'
 import { useAuth } from '@/hooks/useAuth'
 import { settingsApi, parseJSON, type SiteSettings, type Product } from '@/lib/api'
@@ -63,19 +63,20 @@ export default function LandingPage() {
   const [donateOpen,  setDonateOpen]  = useState(false)
   const [punishOpen,  setPunishOpen]  = useState(false)
   const [staffOpen,   setStaffOpen]   = useState(false)
-  const [bpOpen,      setBpOpen]      = useState(false)
-  const [copied,      setCopied]      = useState(false)
-  const [addedId,     setAddedId]     = useState<string | null>(null)
-
-  const scrollToDonate = () => {
-    document.getElementById('donate-section')?.scrollIntoView({ behavior: 'smooth' })
-  }
+  const [bpOpen,         setBpOpen]         = useState(false)
+  const [donateSection,  setDonateSection]  = useState<SectionKey | null>(null)
+  const [copied,         setCopied]         = useState(false)
+  const [addedId,        setAddedId]        = useState<string | null>(null)
 
   const handleDonateGo = (s: DonateSection) => {
     setDonateOpen(false)
     if (s === 'unban')      { setPunishOpen(true); return }
     if (s === 'battlepass') { setBpOpen(true); return }
-    scrollToDonate()
+    // переключаем карусель на нужный раздел и скроллим к ней
+    setDonateSection(s as SectionKey)
+    setTimeout(() => {
+      document.getElementById('donate-section')?.scrollIntoView({ behavior: 'smooth' })
+    }, 80)
   }
 
   const buyToCart = (p: Product) => {
@@ -273,6 +274,8 @@ export default function LandingPage() {
             onBuy={buyToCart}
             onOpenBattlePass={() => setBpOpen(true)}
             addedId={addedId}
+            activeSection={donateSection}
+            onSectionChange={k => setDonateSection(k)}
           />
         </div>
 

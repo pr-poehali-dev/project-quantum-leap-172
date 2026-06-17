@@ -15,11 +15,15 @@ const SECTIONS: { key: SectionKey; title: string; icon: string; color: string }[
   { key: 'battlepass', title: 'Battle Pass',  icon: 'Swords',  color: '#fb923c' },
 ]
 
+export type { SectionKey }
+
 interface Props {
   settings: SiteSettings
   onBuy: (p: Product) => void
   onOpenBattlePass: () => void
   addedId: string | null
+  activeSection?: SectionKey | null
+  onSectionChange?: (k: SectionKey) => void
 }
 
 // волновая задержка: центр первым, далее по расстоянию от центра
@@ -28,15 +32,28 @@ function waveDelay(index: number, total: number) {
   return Math.abs(index - center) * 0.1
 }
 
-export function DonateCarousel({ settings, onBuy, onOpenBattlePass, addedId }: Props) {
-  const [active, setActive] = useState(0)
+export function DonateCarousel({ settings, onBuy, onOpenBattlePass, addedId, activeSection, onSectionChange }: Props) {
+  const [internalActive, setInternalActive] = useState(0)
   const [dir, setDir] = useState(1)
 
+  // управляемый режим: если пришёл activeSection снаружи — используем его
+  const activeIndex = activeSection
+    ? SECTIONS.findIndex(s => s.key === activeSection)
+    : internalActive
+  const active = activeIndex < 0 ? internalActive : activeIndex
   const section = SECTIONS[active]
 
   const go = (delta: number) => {
     setDir(delta)
-    setActive(prev => (prev + delta + SECTIONS.length) % SECTIONS.length)
+    const next = (active + delta + SECTIONS.length) % SECTIONS.length
+    setInternalActive(next)
+    onSectionChange?.(SECTIONS[next].key)
+  }
+
+  const jumpTo = (idx: number) => {
+    setDir(idx > active ? 1 : -1)
+    setInternalActive(idx)
+    onSectionChange?.(SECTIONS[idx].key)
   }
 
   return (
@@ -78,7 +95,7 @@ export function DonateCarousel({ settings, onBuy, onOpenBattlePass, addedId }: P
       {/* точки разделов */}
       <div className="mb-8 flex justify-center gap-2">
         {SECTIONS.map((s, i) => (
-          <button key={s.key} onClick={() => { setDir(i > active ? 1 : -1); setActive(i) }}
+          <button key={s.key} onClick={() => jumpTo(i)}
             className={`h-2 rounded-full transition-all ${i === active ? 'w-6' : 'w-2 bg-white/20'}`}
             style={i === active ? { background: s.color } : undefined}
           />
