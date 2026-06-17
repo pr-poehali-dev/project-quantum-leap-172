@@ -4,25 +4,28 @@ import { Button } from '@/components/ui/button'
 import { ModalShell } from './ModalShell'
 import { ImageUpload } from './ImageUpload'
 import {
-  authApi, settingsApi, parseJSON,
+  authApi, settingsApi, balanceApi, casesApi, parseJSON,
   type User, type Role, type SiteSettings,
   type Privilege, type CoinItem, type CaseItem, type MenuButton, type BattlePass,
+  type PlayerBalance, type CaseItemDrop,
 } from '@/lib/api'
 import { ROLE_META } from '@/lib/permissions'
 
 const ROLES: Role[] = ['player', 'helper', 'moderator', 'admin', 'creator']
 const PRIVILEGES = ['', 'VIP', 'PREMIUM', 'ELITE', 'DELUXE', 'LEGEND', 'DRAGON']
+const RARITIES   = ['common', 'uncommon', 'rare', 'epic', 'legendary']
 
-type Tab = 'users' | 'appearance' | 'privileges' | 'shop' | 'menu' | 'social'
+type Tab = 'users' | 'balances' | 'appearance' | 'privileges' | 'shop' | 'menu' | 'social'
 
 interface Props { open: boolean; onClose: () => void; currentUser: User }
 
 export function AdminModal({ open, onClose, currentUser }: Props) {
-  const [tab, setTab] = useState<Tab>('users')
-  const [users, setUsers] = useState<User[]>([])
+  const [tab, setTab]       = useState<Tab>('users')
+  const [users, setUsers]   = useState<User[]>([])
   const [settings, setSettings] = useState<Partial<SiteSettings>>({})
+  const [balances, setBalances] = useState<PlayerBalance[]>([])
   const [saving, setSaving] = useState(false)
-  const [toast, setToast] = useState('')
+  const [toast, setToast]   = useState('')
 
   const isCreator = currentUser.role === 'creator'
 
@@ -30,7 +33,8 @@ export function AdminModal({ open, onClose, currentUser }: Props) {
     if (!open) return
     authApi.getUsers().then(setUsers).catch(() => {})
     settingsApi.get().then(setSettings).catch(() => {})
-  }, [open])
+    if (isCreator) balanceApi.all().then(setBalances).catch(() => {})
+  }, [open, isCreator])
 
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2000) }
   const set = (k: keyof SiteSettings, v: string) => setSettings(p => ({ ...p, [k]: v }))
@@ -51,8 +55,9 @@ export function AdminModal({ open, onClose, currentUser }: Props) {
   }
 
   const tabs: { key: Tab; label: string; icon: string; show: boolean }[] = [
-    { key: 'users',      label: 'Игроки',      icon: 'Users',    show: true },
-    { key: 'appearance', label: 'Оформление',  icon: 'Palette',  show: isCreator },
+    { key: 'users',      label: 'Игроки',      icon: 'Users',      show: true },
+    { key: 'balances',   label: 'Балансы',     icon: 'Wallet',     show: isCreator },
+    { key: 'appearance', label: 'Оформление',  icon: 'Palette',    show: isCreator },
     { key: 'privileges', label: 'Привилегии',  icon: 'Crown',    show: isCreator },
     { key: 'shop',       label: 'Магазины',    icon: 'ShoppingBag', show: isCreator },
     { key: 'menu',       label: 'Меню',        icon: 'Menu',     show: isCreator },
@@ -104,6 +109,14 @@ export function AdminModal({ open, onClose, currentUser }: Props) {
               )
             })}
           </div>
+        )}
+
+        {tab === 'balances' && isCreator && (
+          <BalancesEditor balances={balances} onUpdate={async (uid, amount) => {
+            await balanceApi.set(uid, amount)
+            setBalances(prev => prev.map(b => b.id === uid ? { ...b, amount } : b))
+            showToast('Баланс обновлён')
+          }} />
         )}
 
         {tab === 'appearance' && isCreator && (
@@ -260,9 +273,10 @@ function ShopEditor({ settings, onChange }: { settings: Partial<SiteSettings>; o
           empty={{ id: `c${Date.now()}`, name: 'Пакет коинов', desc: '', price: 99, image: '' }} />
       )}
       {sub === 'cases' && (
-        <ItemList items={cases} fields={['name', 'desc', 'chance', 'price']} hasImage
-          onSave={items => onChange({ ...settings, cases_json: JSON.stringify(items) })}
-          empty={{ id: `k${Date.now()}`, name: 'Новый кейс', desc: '', chance: '10%', price: 49, image: '' }} />
+        <CasesEditorFull
+          cases={cases}
+          onSaveCases={items => onChange({ ...settings, cases_json: JSON.stringify(items) })}
+        />
       )}
       {sub === 'bp' && (
         <div className="space-y-3">
@@ -373,6 +387,194 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
           className="h-10 w-10 cursor-pointer rounded-lg border border-[#1a3a1a] bg-transparent" />
         <span className="text-sm text-neutral-400">{value}</span>
       </div>
+    </div>
+  )
+}
+
+// ─── Редактор балансов ────────────────────────────────────────────────────────
+function BalancesEditor({ balances, onUpdate }: {
+  balances: PlayerBalance[]
+  onUpdate: (userId: number, amount: number) => Promise<void>
+}) {
+  const [editing, setEditing] = useState<Record<number, string>>({})
+  const [saving,  setSaving]  = useState<number | null>(null)
+
+  const handleSave = async (uid: number) => {
+    const val = parseInt(editing[uid] ?? '')
+    if (isNaN(val) || val < 0) return
+    setSaving(uid)
+    await onUpdate(uid, val).catch(() => {})
+    setSaving(null)
+    setEditing(p => { const n = { ...p }; delete n[uid]; return n })
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-neutral-500">Устанавливай баланс любому игроку. Изменения фиксируются в истории транзакций.</p>
+      {balances.length === 0 && (
+        <p className="py-6 text-center text-sm text-neutral-600">Нет данных — игроки ещё не входили</p>
+      )}
+      {balances.map(b => {
+        const isEditing = uid => editing[uid] !== undefined
+        const val = editing[b.id] ?? String(b.amount)
+        return (
+          <div key={b.id} className="flex items-center gap-3 rounded-xl border border-[#1a3a1a] bg-black/20 p-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-sm font-bold text-emerald-400">
+              {b.username[0].toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1 truncate text-sm font-semibold text-white">{b.username}</div>
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number" min="0" value={val}
+                onChange={e => setEditing(p => ({ ...p, [b.id]: e.target.value }))}
+                className="w-24 rounded-lg border border-[#1a3a1a] bg-black/40 px-2 py-1 text-sm text-white outline-none focus:border-emerald-500/50"
+              />
+              <span className="text-xs text-neutral-500">₽</span>
+            </div>
+            <button
+              onClick={() => handleSave(b.id)}
+              disabled={saving === b.id || val === String(b.amount)}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-black transition-all hover:bg-emerald-400 disabled:opacity-30"
+            >
+              {saving === b.id
+                ? <Icon name="Loader2" size={14} className="animate-spin" />
+                : <Icon name="Check" size={14} />}
+            </button>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ─── Редактор кейсов (список + содержимое) ───────────────────────────────────
+function CasesEditorFull({ cases, onSaveCases }: {
+  cases: CaseItem[]
+  onSaveCases: (items: CaseItem[]) => void
+}) {
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [dropItems,  setDropItems]  = useState<CaseItemDrop[]>([])
+  const [loading,    setLoading]    = useState(false)
+  const [saving,     setSaving]     = useState(false)
+  const [toast,      setToast]      = useState('')
+
+  const selectedCase = cases.find(c => c.id === selectedId)
+
+  // загружаем предметы выбранного кейса
+  useEffect(() => {
+    if (!selectedId) return
+    setLoading(true)
+    casesApi.items(selectedId)
+      .then(setDropItems)
+      .catch(() => setDropItems([]))
+      .finally(() => setLoading(false))
+  }, [selectedId])
+
+  const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2000) }
+
+  const saveDropItems = async () => {
+    if (!selectedId) return
+    setSaving(true)
+    try {
+      await casesApi.saveItems(selectedId, dropItems.map(it => ({
+        name: it.name, rarity: it.rarity, color: it.color, image: it.image, weight: it.weight,
+      })))
+      showToast('Предметы сохранены!')
+    } catch { showToast('Ошибка сохранения') }
+    finally { setSaving(false) }
+  }
+
+  const updDrop = (i: number, patch: Partial<CaseItemDrop>) =>
+    setDropItems(prev => prev.map((it, idx) => idx === i ? { ...it, ...patch } : it))
+
+  const addDrop = () => setDropItems(prev => [
+    ...prev,
+    { id: 0, name: 'Новый предмет', rarity: 'common', color: '#9ca3af', image: '', weight: 10 },
+  ])
+
+  const removeDrop = (i: number) => setDropItems(prev => prev.filter((_, idx) => idx !== i))
+
+  return (
+    <div className="space-y-3">
+      {/* Список кейсов */}
+      <ItemList
+        items={cases}
+        fields={['name', 'desc', 'chance', 'price']}
+        hasImage
+        onSave={onSaveCases}
+        empty={{ id: `k${Date.now()}`, name: 'Новый кейс', desc: '', chance: '10%', price: 49, image: '' }}
+      />
+
+      {/* Выбор кейса для редактирования предметов */}
+      {cases.length > 0 && (
+        <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-3">
+          <div className="mb-2 text-xs font-semibold text-sky-400">
+            <Icon name="Package" size={12} className="mr-1 inline" />Содержимое кейса (что выпадает)
+          </div>
+          <select
+            value={selectedId || ''}
+            onChange={e => setSelectedId(e.target.value || null)}
+            className="w-full rounded-lg border border-[#1a3a1a] bg-black/40 px-3 py-2 text-sm text-white outline-none"
+          >
+            <option value="">— Выберите кейс —</option>
+            {cases.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+
+          {selectedId && selectedCase && (
+            <div className="mt-3 space-y-2">
+              {loading && <p className="py-3 text-center text-xs text-neutral-500">Загрузка...</p>}
+
+              {!loading && dropItems.map((it, i) => (
+                <div key={i} className="space-y-1.5 rounded-xl border border-[#1a3a1a] bg-black/30 p-2.5">
+                  <div className="flex items-center gap-2">
+                    <input value={it.name} placeholder="Название"
+                      onChange={e => updDrop(i, { name: e.target.value })}
+                      className="flex-1 rounded-lg border border-[#1a3a1a] bg-black/40 px-2.5 py-1.5 text-xs text-white outline-none" />
+                    <select value={it.rarity} onChange={e => updDrop(i, { rarity: e.target.value })}
+                      className="rounded-lg border border-[#1a3a1a] bg-black/40 px-2 py-1.5 text-xs text-white outline-none">
+                      {RARITIES.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input value={it.image} placeholder="URL картинки"
+                      onChange={e => updDrop(i, { image: e.target.value })}
+                      className="flex-1 rounded-lg border border-[#1a3a1a] bg-black/40 px-2.5 py-1.5 text-xs text-white outline-none" />
+                    <div className="flex items-center gap-1.5">
+                      <input type="color" value={it.color} onChange={e => updDrop(i, { color: e.target.value })}
+                        className="h-7 w-7 cursor-pointer rounded-lg border border-[#1a3a1a] bg-transparent" />
+                      <input type="number" value={it.weight} min={1} placeholder="Вес"
+                        onChange={e => updDrop(i, { weight: parseInt(e.target.value) || 1 })}
+                        className="w-14 rounded-lg border border-[#1a3a1a] bg-black/40 px-2 py-1.5 text-xs text-white outline-none"
+                        title="Вес (чем больше — тем чаще выпадает)" />
+                      <button onClick={() => removeDrop(i)}>
+                        <Icon name="Trash2" size={13} className="text-red-400" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {!loading && (
+                <div className="flex gap-2">
+                  <button onClick={addDrop}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-dashed border-emerald-500/40 py-2 text-xs text-emerald-400 hover:bg-emerald-500/5">
+                    <Icon name="Plus" size={13} />Добавить предмет
+                  </button>
+                  <button onClick={saveDropItems} disabled={saving}
+                    className="flex items-center gap-1.5 rounded-xl bg-emerald-500 px-4 py-2 text-xs font-bold text-black hover:bg-emerald-400 disabled:opacity-50">
+                    {saving ? <Icon name="Loader2" size={13} className="animate-spin" /> : <Icon name="Save" size={13} />}
+                    {saving ? 'Сохранение...' : 'Сохранить'}
+                  </button>
+                </div>
+              )}
+
+              {toast && (
+                <p className="text-center text-xs font-semibold text-emerald-400">{toast}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

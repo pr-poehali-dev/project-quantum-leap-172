@@ -13,6 +13,7 @@ export interface User {
   username: string
   role: Role
   privilege: string | null
+  balance?: number
 }
 
 export interface NewsItem {
@@ -152,6 +153,36 @@ export const punishmentsApi = {
     req<Punishment>(URLS.punishments, { method: 'POST', body: JSON.stringify(data) }),
   remove: (id: number) =>
     req(URLS.punishments, { method: 'PUT', body: JSON.stringify({ id }) }),
+}
+
+// ── BALANCE ──
+export interface BalanceTx { delta: number; reason: string; created_at: string }
+export interface BalanceInfo { amount: number; transactions: BalanceTx[] }
+export interface PlayerBalance { id: number; username: string; amount: number }
+
+export const balanceApi = {
+  me: () => req<BalanceInfo>(URLS.auth + '?action=balance'),
+  all: () => req<PlayerBalance[]>(URLS.auth + '?action=balance_all'),
+  topup: (amount: number, reason?: string, user_id?: number) =>
+    req<{ amount: number }>(URLS.auth, { method: 'POST', body: JSON.stringify({ action: 'topup', amount, reason: reason || 'Пополнение', ...(user_id ? { user_id } : {}) }) }),
+  set: (user_id: number, amount: number) =>
+    req<{ amount: number }>(URLS.auth, { method: 'POST', body: JSON.stringify({ action: 'balance_set', user_id, amount }) }),
+  spend: (amount: number, reason: string) =>
+    req<{ amount: number }>(URLS.auth, { method: 'POST', body: JSON.stringify({ action: 'spend', amount, reason }) }),
+}
+
+// ── CASES ──
+export interface CaseItemDrop { id: number; name: string; rarity: string; color: string; image: string; weight: number }
+export interface InventoryItem { id: number; name: string; rarity: string; color: string; image: string; case_name: string; obtained_at: string }
+export interface OpenCaseResult { won: CaseItemDrop & { inv_id: number; obtained_at: string }; new_balance: number; all_items: CaseItemDrop[] }
+
+export const casesApi = {
+  items: (case_id: string) => req<CaseItemDrop[]>(URLS.auth + `?action=case_items&case_id=${encodeURIComponent(case_id)}`),
+  inventory: () => req<InventoryItem[]>(URLS.auth + '?action=inventory'),
+  open: (case_id: string, case_name: string, price: number) =>
+    req<OpenCaseResult>(URLS.auth, { method: 'POST', body: JSON.stringify({ action: 'open_case', case_id, case_name, price }) }),
+  saveItems: (case_id: string, items: Omit<CaseItemDrop, 'id'>[]) =>
+    req(URLS.auth, { method: 'POST', body: JSON.stringify({ action: 'save_items', case_id, items }) }),
 }
 
 // ── COMPLAINTS ──

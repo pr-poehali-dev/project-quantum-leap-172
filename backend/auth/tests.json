@@ -1,11 +1,34 @@
 {
   "tests": [
     {
-      "name": "Options preflight",
+      "name": "OPTIONS preflight",
       "method": "OPTIONS",
       "path": "/",
-      "expectedStatus": 200,
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET me — unauthorized",
+      "method": "GET",
+      "path": "/?action=me",
+      "expectedStatus": 401
+    },
+    {
+      "name": "GET case_items — empty",
+      "method": "GET",
+      "path": "/?action=case_items&case_id=__test__",
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET balance — unauthorized",
+      "method": "GET",
+      "path": "/?action=balance",
+      "expectedStatus": 401
+    },
+    {
+      "name": "GET inventory — unauthorized",
+      "method": "GET",
+      "path": "/?action=inventory",
+      "expectedStatus": 401
     }
   ]
 }

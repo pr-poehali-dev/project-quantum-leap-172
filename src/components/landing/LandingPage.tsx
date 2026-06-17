@@ -15,9 +15,11 @@ import { HeroSlideshow } from './HeroSlideshow'
 import { DonateCarousel, type SectionKey } from './DonateCarousel'
 import { BattlePassModal } from './BattlePassModal'
 import { MobileNav } from './MobileNav'
+import { CaseOpenModal } from './CaseOpenModal'
 import { useAuth } from '@/hooks/useAuth'
 import { useComplaints } from '@/hooks/useComplaints'
-import { settingsApi, parseJSON, type SiteSettings, type Product } from '@/lib/api'
+import { useBalance } from '@/hooks/useBalance'
+import { casesApi, settingsApi, parseJSON, type SiteSettings, type Product, type CaseItem, type InventoryItem } from '@/lib/api'
 import { isStaff } from '@/lib/permissions'
 
 const LOGO_IMG = 'https://cdn.poehali.dev/projects/2e83ccfa-ea22-4097-88e8-31abba7dbd2b/bucket/c9bc29d5-607e-4f60-aca7-ff80bcb975a6.png'
@@ -54,6 +56,9 @@ export default function LandingPage() {
   const cart = useCart()
   const { user, login, register, logout } = useAuth()
   const newComplaints = useComplaints(user)
+  const { amount: balance, transactions, refresh: refreshBalance, topup } = useBalance(!!user)
+  const [inventory, setInventory] = useState<InventoryItem[]>([])
+  const [openingCase, setOpeningCase] = useState<CaseItem | null>(null)
 
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SETTINGS)
   const [shopOpen,    setShopOpen]    = useState(false)
@@ -91,6 +96,11 @@ export default function LandingPage() {
   useEffect(() => {
     settingsApi.get().then(setSiteSettings).catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (!user) { setInventory([]); return }
+    casesApi.inventory().then(setInventory).catch(() => {})
+  }, [user])
 
   const copyIp = () => {
     navigator.clipboard?.writeText(siteSettings.server_ip)
@@ -176,7 +186,10 @@ export default function LandingPage() {
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-400">
                   {user.username[0].toUpperCase()}
                 </div>
-                <span className="hidden max-w-20 truncate text-white sm:block">{user.username}</span>
+                <div className="hidden flex-col items-start sm:flex">
+                  <span className="max-w-20 truncate text-xs font-semibold text-white leading-tight">{user.username}</span>
+                  <span className="text-[10px] font-bold text-emerald-400 leading-tight">{balance} ₽</span>
+                </div>
                 {user.role !== 'player' && (
                   <span className="hidden text-xs font-bold sm:block" style={{ color: ROLE_COLORS[user.role] }}>
                     {user.role === 'creator' ? '★' : user.role === 'admin' ? '⚡' : user.role === 'moderator' ? '🛡' : '?'}
@@ -284,6 +297,7 @@ export default function LandingPage() {
             addedId={addedId}
             activeSection={donateSection}
             onSectionChange={k => setDonateSection(k)}
+            onOpenCase={user ? (c) => setOpeningCase(c) : undefined}
           />
         </div>
 
@@ -368,10 +382,26 @@ export default function LandingPage() {
           onOpenStaff={() => { setProfileOpen(false); setStaffOpen(true) }}
           onOpenAdmin={() => { setProfileOpen(false); setAdminOpen(true) }}
           onOpenPunishments={() => { setProfileOpen(false); setPunishOpen(true) }}
+          balance={balance}
+          inventory={inventory}
+          transactions={transactions}
+          onTopup={topup}
         />
       )}
       {user && isStaff(user.role) && <StaffPanel open={staffOpen} onClose={() => setStaffOpen(false)} user={user} />}
       {user && isAdmin && <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} currentUser={user} />}
+      {user && openingCase && (
+        <CaseOpenModal
+          open={!!openingCase}
+          onClose={() => setOpeningCase(null)}
+          caseItem={openingCase}
+          balance={balance}
+          onOpened={() => {
+            refreshBalance()
+            casesApi.inventory().then(setInventory).catch(() => {})
+          }}
+        />
+      )}
 
       {/* ── МОБИЛЬНОЕ МЕНЮ ── */}
       <MobileNav

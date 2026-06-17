@@ -24,6 +24,7 @@ interface Props {
   addedId: string | null
   activeSection?: SectionKey | null
   onSectionChange?: (k: SectionKey) => void
+  onOpenCase?: (c: CaseItem) => void
 }
 
 function waveDelay(index: number, total: number) {
@@ -50,7 +51,7 @@ function buyBtnStyle(color: string, added: boolean) {
   }
 }
 
-export function DonateCarousel({ settings, onBuy, onOpenBattlePass, addedId, activeSection, onSectionChange }: Props) {
+export function DonateCarousel({ settings, onBuy, onOpenBattlePass, addedId, activeSection, onSectionChange, onOpenCase }: Props) {
   const [internalActive, setInternalActive] = useState(0)
   const [dir, setDir] = useState(1)
   const [detail, setDetail] = useState<ItemDetail | null>(null)
@@ -125,7 +126,7 @@ export function DonateCarousel({ settings, onBuy, onOpenBattlePass, addedId, act
           >
             {section.key === 'privileges' && <PrivilegesGrid settings={settings} onBuy={onBuy} addedId={addedId} onDetail={setDetail} />}
             {section.key === 'coins'      && <CoinsGrid      settings={settings} onBuy={onBuy} addedId={addedId} onDetail={setDetail} />}
-            {section.key === 'cases'      && <CasesGrid      settings={settings} onBuy={onBuy} addedId={addedId} onDetail={setDetail} />}
+            {section.key === 'cases'      && <CasesGrid      settings={settings} onBuy={onBuy} addedId={addedId} onDetail={setDetail} onOpenCase={onOpenCase} />}
             {section.key === 'battlepass' && <BattlePassPreview settings={settings} onOpen={onOpenBattlePass} />}
           </motion.div>
         </AnimatePresence>
@@ -226,8 +227,9 @@ function CoinsGrid({ settings, onBuy, addedId, onDetail }: {
 }
 
 // ─── Кейсы ───────────────────────────────────────────────────────────────────
-function CasesGrid({ settings, onBuy, addedId, onDetail }: {
-  settings: SiteSettings; onBuy: (p: Product) => void; addedId: string | null; onDetail: (d: ItemDetail) => void
+function CasesGrid({ settings, onBuy, addedId, onDetail, onOpenCase }: {
+  settings: SiteSettings; onBuy: (p: Product) => void; addedId: string | null
+  onDetail: (d: ItemDetail) => void; onOpenCase?: (c: CaseItem) => void
 }) {
   const list = parseJSON<CaseItem[]>(settings.cases_json, [])
   const color = '#38bdf8'
@@ -238,30 +240,44 @@ function CasesGrid({ settings, onBuy, addedId, onDetail }: {
         <WaveCard key={c.id} index={i} total={list.length}>
           <div
             onClick={() => onDetail({ id: c.id, name: c.name, desc: c.desc, price: c.price, color, image: c.image, emoji: '📦', chance: c.chance, extraLabel: 'Кейс' })}
-            className="group flex h-full cursor-pointer items-center gap-4 overflow-hidden rounded-2xl border border-[#1a3a1a] bg-[#07130a] p-4 transition-all hover:border-sky-500/30 hover:bg-sky-500/5"
+            className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-[#1a3a1a] bg-[#07130a] p-4 transition-all hover:border-sky-500/30 hover:bg-sky-500/5"
           >
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-sky-500/10">
-              {c.image
-                ? <img src={c.image} alt={c.name} className="h-full w-full object-cover" />
-                : <span className="text-3xl transition-transform group-hover:scale-110">📦</span>}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate font-bold text-sky-300">{c.name}</div>
-              <div className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-400">
-                <Icon name="Dices" size={10} />Шанс: {c.chance}
+            {/* Верхняя часть: иконка + инфо */}
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-sky-500/10">
+                {c.image
+                  ? <img src={c.image} alt={c.name} className="h-full w-full object-cover" />
+                  : <span className="text-3xl transition-transform group-hover:scale-110">📦</span>}
               </div>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-lg font-bold text-white">{c.price} ₽</span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-bold text-sky-300">{c.name}</div>
+                <p className="mt-0.5 line-clamp-1 text-xs text-neutral-400">{c.desc}</p>
+                <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-400">
+                  <Icon name="Dices" size={10} />Шанс: {c.chance}
+                </div>
+              </div>
+            </div>
+            {/* Нижняя часть: цена + кнопки */}
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-lg font-bold text-white">{c.price} ₽</span>
+              <div className="ml-auto flex gap-1.5">
+                {onOpenCase && (
+                  <button
+                    onClick={e => { e.stopPropagation(); onOpenCase(c) }}
+                    className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-sky-500 to-blue-500 px-3 py-1.5 text-xs font-bold text-white shadow-[0_2px_12px_rgba(56,189,248,0.4)] transition-all hover:brightness-110 active:scale-95"
+                  >
+                    <Icon name="Package" size={12} />Открыть
+                  </button>
+                )}
                 <button
                   onClick={e => { e.stopPropagation(); onBuy({ id: c.id, name: c.name, description: c.desc, price: c.price, icon: 'Package', color }) }}
-                  className="rounded-lg px-3 py-1 text-xs font-bold text-black transition-all active:scale-95"
+                  className="rounded-lg px-3 py-1.5 text-xs font-bold text-black transition-all active:scale-95"
                   style={buyBtnStyle(color, addedId === c.id)}
                 >
-                  {addedId === c.id ? '✓' : 'Купить'}
+                  {addedId === c.id ? '✓' : 'В корзину'}
                 </button>
               </div>
             </div>
-            <Icon name="ChevronRight" size={16} className="shrink-0 text-neutral-700 group-hover:text-sky-500" />
           </div>
         </WaveCard>
       ))}
