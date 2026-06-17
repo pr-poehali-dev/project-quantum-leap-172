@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Icon from '@/components/ui/icon'
 import { useCart } from './useCart'
-import { products } from './shop-data'
 import { ShopModal, CartModal } from './ShopModals'
 import { AuthModal } from './AuthModal'
 import { ProfileModal } from './ProfileModal'
@@ -12,20 +11,15 @@ import { RulesModalNew } from './RulesModalNew'
 import { DonateModal, type DonateSection } from './DonateModal'
 import { PunishmentsModal } from './PunishmentsModal'
 import { StaffPanel } from './StaffPanel'
+import { HeroSlideshow } from './HeroSlideshow'
+import { DonateCarousel } from './DonateCarousel'
+import { BattlePassModal } from './BattlePassModal'
 import { useAuth } from '@/hooks/useAuth'
-import { settingsApi, type SiteSettings } from '@/lib/api'
+import { settingsApi, parseJSON, type SiteSettings, type Product } from '@/lib/api'
 import { isStaff } from '@/lib/permissions'
 
 const LOGO_IMG = 'https://cdn.poehali.dev/projects/2e83ccfa-ea22-4097-88e8-31abba7dbd2b/bucket/c9bc29d5-607e-4f60-aca7-ff80bcb975a6.png'
 const HERO_CHAR = 'https://cdn.poehali.dev/projects/2e83ccfa-ea22-4097-88e8-31abba7dbd2b/files/367989cc-e289-4e27-996f-13dd62749b4a.jpg'
-
-const PRIVILEGE_RANKS = [
-  { id: 'vip',     name: 'VIP',     color: '#4ade80', price: 149,  desc: 'Доступ к базовым возможностям /kit vip, префикс' },
-  { id: 'premium', name: 'PREMIUM', color: '#22d3ee', price: 299,  desc: 'Увеличенные лимиты /kit premium, префикс и многое другое' },
-  { id: 'elite',   name: 'ELITE',   color: '#a78bfa', price: 499,  desc: 'Отличные возможности /kit elite, префикс, эффекты и другое' },
-  { id: 'legend',  name: 'LEGEND',  color: '#fbbf24', price: 999,  desc: 'Максимум возможностей /kit legend, префикс, полёт и другое' },
-  { id: 'dragon',  name: 'DRAGON',  color: '#f87171', price: 1999, desc: 'Только для настоящих легенд /kit dragon, префикс, частички' },
-]
 
 const FEATURES = [
   { icon: 'Package',     label: 'Уникальные киты',        sub: 'Большой выбор наборов' },
@@ -49,6 +43,9 @@ const DEFAULT_SETTINGS: SiteSettings = {
   site_title: 'MCFIRE.BOX', hero_bg_color: '#071a0d', accent_color: '#4ade80',
   server_ip: 'mcfire.box', server_version: '1.20.4', online_count: '1257',
   discord_url: '', telegram_url: '', vk_url: '',
+  logo_url: LOGO_IMG, bg_image_url: '', slideshow_interval: '12',
+  slideshow_images: '[]', privileges_json: '[]', coins_json: '[]',
+  cases_json: '[]', battlepass_json: '{"price":569,"levels":[]}', menu_buttons_json: '[]',
 }
 
 export default function LandingPage() {
@@ -66,13 +63,25 @@ export default function LandingPage() {
   const [donateOpen,  setDonateOpen]  = useState(false)
   const [punishOpen,  setPunishOpen]  = useState(false)
   const [staffOpen,   setStaffOpen]   = useState(false)
+  const [bpOpen,      setBpOpen]      = useState(false)
   const [copied,      setCopied]      = useState(false)
   const [addedId,     setAddedId]     = useState<string | null>(null)
 
+  const scrollToDonate = () => {
+    document.getElementById('donate-section')?.scrollIntoView({ behavior: 'smooth' })
+  }
+
   const handleDonateGo = (s: DonateSection) => {
     setDonateOpen(false)
-    if (s === 'unban') { setPunishOpen(true); return }
-    setShopOpen(true)
+    if (s === 'unban')      { setPunishOpen(true); return }
+    if (s === 'battlepass') { setBpOpen(true); return }
+    scrollToDonate()
+  }
+
+  const buyToCart = (p: Product) => {
+    cart.add(p)
+    setAddedId(p.id)
+    setTimeout(() => setAddedId(null), 1200)
   }
 
   useEffect(() => {
@@ -83,12 +92,6 @@ export default function LandingPage() {
     navigator.clipboard?.writeText(siteSettings.server_ip)
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
-  }
-
-  const addToCart = (p: typeof products[0]) => {
-    cart.add(p)
-    setAddedId(p.id)
-    setTimeout(() => setAddedId(null), 1200)
   }
 
   const openSocial = (url: string) => {
@@ -197,9 +200,10 @@ export default function LandingPage() {
 
           <div className="relative flex flex-col items-center md:flex-row">
             <motion.div variants={fadeUp} custom={0.1} className="relative z-10 flex-shrink-0 md:w-[42%]">
-              <img src={HERO_CHAR} alt="Minecraft character"
-                className="h-72 w-full object-cover object-center md:h-[420px]"
-                style={{ maskImage: 'linear-gradient(to right, black 60%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 60%, transparent 100%)' }}
+              <HeroSlideshow
+                images={parseJSON<string[]>(siteSettings.slideshow_images, [])}
+                intervalSec={parseInt(siteSettings.slideshow_interval) || 12}
+                fallback={HERO_CHAR}
               />
             </motion.div>
 
@@ -262,44 +266,15 @@ export default function LandingPage() {
           ))}
         </div>
 
-        {/* ── PRIVILEGES ── */}
-        <section className="mt-12">
-          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="mb-8 flex items-center justify-center gap-4"
-          >
-            <span className="text-emerald-400">◆</span>
-            <h2 className="font-display text-2xl font-bold tracking-widest text-white md:text-3xl">ПРИВИЛЕГИИ</h2>
-            <span className="text-emerald-400">◆</span>
-          </motion.div>
-
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {PRIVILEGE_RANKS.map((r, i) => {
-              const prod = products.find(p => p.id === r.id) ?? products[i]
-              return (
-                <motion.div key={r.id}
-                  initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }} transition={{ delay: i * 0.07 }}
-                  className="group flex flex-col items-center overflow-hidden rounded-2xl border border-[#1a3a1a] bg-[#07130a] p-4 text-center transition-all hover:-translate-y-2 hover:border-emerald-500/40 hover:shadow-[0_8px_40px_-8px_rgba(74,222,128,0.3)] md:p-5"
-                >
-                  <div className="mb-3 text-5xl transition-transform group-hover:scale-110">
-                    {i === 4 ? '🐉' : '👑'}
-                  </div>
-                  <div className="font-display text-base font-bold md:text-lg" style={{ color: r.color, textShadow: `0 0 12px ${r.color}66` }}>
-                    {r.name}
-                  </div>
-                  <p className="mt-2 flex-1 text-xs leading-relaxed text-neutral-400">{r.desc}</p>
-                  <div className="mt-4 text-xl font-bold text-white md:text-2xl">{r.price} ₽</div>
-                  <button onClick={() => addToCart(prod)}
-                    className="mt-3 w-full rounded-xl py-2.5 text-sm font-bold text-black transition-all active:scale-95"
-                    style={{ background: addedId === r.id ? '#22c55e' : `linear-gradient(135deg, ${r.color}, ${r.color}bb)`, boxShadow: `0 4px 16px -4px ${r.color}66` }}
-                  >
-                    {addedId === r.id ? '✓ Добавлено' : 'Купить'}
-                  </button>
-                </motion.div>
-              )
-            })}
-          </div>
-        </section>
+        {/* ── ДОНАТ: разделы со стрелками и волной ── */}
+        <div id="donate-section" className="scroll-mt-20">
+          <DonateCarousel
+            settings={siteSettings}
+            onBuy={buyToCart}
+            onOpenBattlePass={() => setBpOpen(true)}
+            addedId={addedId}
+          />
+        </div>
 
         {/* ── FEATURES ── */}
         <section className="mt-10 mb-12">
@@ -370,6 +345,7 @@ export default function LandingPage() {
       <RulesModalNew open={rulesOpen}  onClose={() => setRulesOpen(false)} />
       <DonateModal   open={donateOpen} onClose={() => setDonateOpen(false)} onGo={handleDonateGo} />
       <PunishmentsModal open={punishOpen} onClose={() => setPunishOpen(false)} user={user} />
+      <BattlePassModal open={bpOpen} onClose={() => setBpOpen(false)} settings={siteSettings} user={user} onBuy={buyToCart} />
       <AuthModal   open={authOpen}    onClose={() => setAuthOpen(false)}   onLogin={login} onRegister={register} />
       <NewsModal   open={newsOpen}    onClose={() => setNewsOpen(false)}   user={user} />
       {user && <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} user={user} onLogout={() => { logout(); setProfileOpen(false) }} />}
