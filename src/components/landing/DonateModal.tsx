@@ -16,12 +16,12 @@ interface Props { open: boolean; onClose: () => void; onGo: (s: DonateSection) =
 
 export function DonateModal({ open, onClose, onGo }: Props) {
   return (
-    <ModalShell open={open} onClose={onClose} title="Донат" icon="Gift" maxWidth="max-w-lg">
-      <div className="space-y-3 p-6">
+    <ModalShell open={open} onClose={onClose} title="Донат" icon="Gift" maxWidth="max-w-sm">
+      <div className="space-y-2 p-4">
         {SECTIONS.map((s, i) => (
           <motion.div key={s.id}
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }}
-            className={`flex items-center justify-between gap-3 rounded-xl border p-4 ${s.special ? 'border-red-500/50 bg-red-500/5' : 'border-[#1a3a1a] bg-black/20'}`}
+            className={`flex items-center justify-between gap-3 rounded-xl border p-3 ${s.special ? 'border-red-500/50 bg-red-500/5' : 'border-[#1a3a1a] bg-black/20'}`}
           >
             <div className="flex items-center gap-3">
               <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${s.bg}/15`}>

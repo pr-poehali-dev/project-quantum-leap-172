@@ -108,8 +108,8 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#050f07] text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
 
       {/* ── HEADER ── */}
-      <header className="sticky top-0 z-40 border-b border-[#1a3a1a] bg-[#07130a]/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-2.5 md:px-6">
+      <header className="sticky top-0 z-40 border-b border-[#1a3a1a] bg-[#07130a]/95 backdrop-blur-md">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-2.5 md:px-8">
           {/* Logo */}
           <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex shrink-0 items-center gap-2">
             <img src={LOGO_IMG} alt="MCFIRE.BOX" className="h-9 w-9 rounded-lg object-cover" />
@@ -195,7 +195,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 pb-0 md:px-6">
+      <main className="mx-auto max-w-5xl px-4 pb-4 md:px-8">
 
         {/* ── HERO BANNER ── */}
         <motion.section initial="hidden" animate="visible"
@@ -218,7 +218,7 @@ export default function LandingPage() {
 
             <div className="relative z-10 flex min-w-0 flex-1 flex-col items-center px-6 py-10 text-center md:items-start md:py-16 md:text-left">
               <motion.h1 variants={fadeUp} custom={0.15}
-                className="w-full font-display text-3xl leading-tight drop-shadow-[0_0_30px_rgba(74,222,128,0.4)] sm:text-4xl md:text-5xl lg:text-6xl"
+                className="w-full font-display text-2xl leading-tight drop-shadow-[0_0_24px_rgba(74,222,128,0.4)] sm:text-3xl md:text-4xl lg:text-5xl"
               >
                 <span className="relative inline-block max-w-full overflow-hidden whitespace-nowrap">
                   <span className="text-white">MCFIRE</span>
@@ -310,8 +310,8 @@ export default function LandingPage() {
       </main>
 
       {/* ── FOOTER ── */}
-      <footer className="border-t border-[#1a3a1a] bg-[#040c06] px-4 py-8 md:px-6">
-        <div className="mx-auto max-w-7xl">
+      <footer className="border-t border-[#1a3a1a] bg-[#040c06] px-4 py-8 md:px-8">
+        <div className="mx-auto max-w-5xl">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="flex items-center gap-2">

@@ -8,7 +8,7 @@ export function RulesModalNew({ open, onClose }: { open: boolean; onClose: () =>
   const [openSection, setOpenSection] = useState<number | null>(1)
 
   return (
-    <ModalShell open={open} onClose={onClose} title="Правила проекта MCFIRE.BOX" icon="ScrollText" maxWidth="max-w-3xl">
+    <ModalShell open={open} onClose={onClose} title="Правила проекта MCFIRE.BOX" icon="ScrollText" maxWidth="max-w-2xl">
       <div className="space-y-3 p-4 sm:p-6">
         {RULES_SECTIONS.map(section => {
           const isOpen = openSection === section.id

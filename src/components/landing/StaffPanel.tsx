@@ -27,26 +27,26 @@ export function StaffPanel({ open, onClose, user }: Props) {
 
   return (
     <ModalShell open={open} onClose={onClose} maxWidth="max-w-2xl">
-      <div className="border-b border-emerald-500/20 px-6 py-4">
+      <div className="border-b border-white/5 px-4 py-3 sm:px-5">
         <div className="flex items-center gap-2">
-          <Icon name={meta.icon} size={20} style={{ color: meta.color }} />
-          <h2 className="font-display text-lg text-white">Панель персонала</h2>
-          <span className="rounded-md px-2 py-0.5 text-xs font-bold" style={{ background: `${meta.color}22`, color: meta.color }}>
+          <Icon name={meta.icon} size={17} style={{ color: meta.color }} />
+          <h2 className="text-base font-bold text-white">Панель персонала</h2>
+          <span className="rounded-md px-2 py-0.5 text-[10px] font-bold" style={{ background: `${meta.color}22`, color: meta.color }}>
             {meta.label}
           </span>
         </div>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
           {tabs.filter(t => t.show).map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all ${tab === t.key ? 'bg-emerald-500 text-black' : 'border border-[#1a3a1a] text-neutral-400 hover:text-white'}`}
+              className={`flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${tab === t.key ? 'bg-emerald-500 text-black' : 'border border-[#1a3a1a] text-neutral-400 hover:text-white'}`}
             >
-              <Icon name={t.icon} size={14} />{t.label}
+              <Icon name={t.icon} size={13} />{t.label}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-5">
         {tab === 'rights' && (
           <div className="space-y-4">
             <p className="text-sm text-neutral-400">Возможности вашей роли «{rights.title}»:</p>

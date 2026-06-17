@@ -44,7 +44,9 @@ export interface SiteSettings {
   menu_buttons_json: string
 }
 
-export interface Privilege { id: string; name: string; color: string; price: number; desc: string; icon?: string }
+export interface Privilege { id: string; name: string; color: string; price: number; desc: string; icon?: string; image?: string; features?: string[] }
+export interface CoinItemFull extends CoinItem { features?: string[] }
+export interface CaseItemFull extends CaseItem { features?: string[] }
 export interface CoinItem { id: string; name: string; desc: string; price: number; image: string }
 export interface CaseItem { id: string; name: string; desc: string; chance: string; price: number; image: string }
 export interface MenuButton { label: string; link: string; visible: boolean }

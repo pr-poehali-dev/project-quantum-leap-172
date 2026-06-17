@@ -65,13 +65,13 @@ export function NewsModal({ open, onClose, user }: Props) {
             exit={{ opacity: 0, scale: 0.93, y: 24 }}
             transition={{ type: 'spring', damping: 22, stiffness: 280 }}
             onClick={e => e.stopPropagation()}
-            className="relative flex h-[85vh] w-full max-w-2xl flex-col rounded-2xl border border-emerald-500/30 bg-[#07130a] shadow-[0_0_60px_-15px_rgba(16,185,129,0.5)]"
+            className="relative flex h-[88vh] w-full max-w-xl flex-col rounded-2xl border border-emerald-500/25 bg-[#07130a] shadow-[0_0_50px_-12px_rgba(16,185,129,0.4)]"
           >
             <button onClick={onClose} className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/20 text-neutral-400 hover:text-white">
               <Icon name="X" size={16} />
             </button>
 
-            <div className="flex items-center justify-between border-b border-emerald-500/20 px-6 py-4">
+            <div className="flex items-center justify-between border-b border-white/5 px-4 py-3 sm:px-5">
               <h2 className="font-display text-lg text-white">Новости сервера</h2>
               {canManage && !creating && !editing && (
                 <Button size="sm" onClick={startCreate} className="bg-emerald-500 text-black hover:bg-emerald-400 mr-8">
@@ -80,7 +80,7 @@ export function NewsModal({ open, onClose, user }: Props) {
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3">
               {/* Form */}
               {(creating || editing) && (
                 <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}

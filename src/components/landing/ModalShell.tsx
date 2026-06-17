@@ -11,29 +11,29 @@ interface Props {
   children: ReactNode
 }
 
-export function ModalShell({ open, onClose, title, icon, maxWidth = 'max-w-2xl', children }: Props) {
+export function ModalShell({ open, onClose, title, icon, maxWidth = 'max-w-xl', children }: Props) {
   return (
     <AnimatePresence>
       {open && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-sm sm:p-4"
         >
-          <motion.div initial={{ opacity: 0, scale: 0.93, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.93, y: 24 }}
-            transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+          <motion.div initial={{ opacity: 0, scale: 0.94, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 20 }}
+            transition={{ type: 'spring', damping: 24, stiffness: 300 }}
             onClick={e => e.stopPropagation()}
-            className={`relative flex max-h-[88vh] w-full ${maxWidth} flex-col overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#07130a] shadow-[0_0_60px_-15px_rgba(16,185,129,0.5)]`}
+            className={`relative flex max-h-[90vh] w-full ${maxWidth} flex-col overflow-hidden rounded-2xl border border-emerald-500/25 bg-[#07130a] shadow-[0_0_50px_-12px_rgba(16,185,129,0.4)]`}
           >
             <button onClick={onClose}
-              className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/20 text-neutral-400 transition-colors hover:text-white"
+              className="absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 text-neutral-500 transition-colors hover:text-white"
             >
-              <Icon name="X" size={16} />
+              <Icon name="X" size={14} />
             </button>
             {title && (
-              <div className="flex items-center gap-2 border-b border-emerald-500/20 px-6 py-4">
-                {icon && <Icon name={icon} size={20} className="text-emerald-400" />}
-                <h2 className="font-display text-lg text-white">{title}</h2>
+              <div className="flex shrink-0 items-center gap-2 border-b border-white/5 px-5 py-3.5">
+                {icon && <Icon name={icon} size={17} className="text-emerald-400" />}
+                <h2 className="text-base font-bold text-white">{title}</h2>
               </div>
             )}
             <div className="flex-1 overflow-y-auto">{children}</div>

@@ -51,25 +51,25 @@ export function PunishmentsModal({ open, onClose, user }: Props) {
 
   return (
     <>
-      <ModalShell open={open} onClose={onClose} maxWidth="max-w-4xl">
-        <div className="border-b border-emerald-500/20 px-6 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+      <ModalShell open={open} onClose={onClose} maxWidth="max-w-2xl">
+        <div className="border-b border-white/5 px-4 py-3 sm:px-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Icon name="Gavel" size={20} className="text-red-400" />
-              <h2 className="font-display text-lg text-white">База наказаний</h2>
+              <Icon name="Gavel" size={17} className="text-red-400" />
+              <h2 className="text-base font-bold text-white">База наказаний</h2>
             </div>
             {isStaff(role) && (
               <Button size="sm" onClick={() => setIssueOpen(true)}
-                className="bg-red-500 text-white hover:bg-red-400"
+                className="bg-red-500 text-white hover:bg-red-400 text-xs"
               >
-                <Icon name="Hammer" size={14} className="mr-1" />Выдать наказание
+                <Icon name="Hammer" size={13} className="mr-1" />Выдать наказание
               </Button>
             )}
           </div>
-          <div className="mt-3 flex gap-2">
+          <div className="mt-2.5 flex gap-1.5">
             {([['all', 'Все'], ['mine', 'Мои наказания']] as const).map(([k, label]) => (
               <button key={k} onClick={() => setTab(k)}
-                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all ${tab === k ? 'bg-emerald-500 text-black' : 'border border-[#1a3a1a] text-neutral-400 hover:text-white'}`}
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${tab === k ? 'bg-emerald-500 text-black' : 'border border-[#1a3a1a] text-neutral-400 hover:text-white'}`}
               >
                 {label}
               </button>

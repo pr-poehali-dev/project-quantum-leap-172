@@ -158,5 +158,8 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    /* отступ снизу для мобильной нижней панели */
+    scroll-padding-bottom: 64px;
   }
 }

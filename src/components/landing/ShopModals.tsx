@@ -34,7 +34,7 @@ function Backdrop({ children, onClose }: { children: React.ReactNode; onClose: (
         exit="exit"
         transition={{ type: "spring", damping: 22, stiffness: 280 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-3xl max-h-[88vh] overflow-hidden rounded-2xl border border-emerald-500/30 bg-[#0a140f]/95 shadow-[0_0_60px_-15px_rgba(16,185,129,0.5)]"
+        className="relative w-full max-w-xl max-h-[88vh] overflow-hidden rounded-2xl border border-emerald-500/25 bg-[#07130a] shadow-[0_0_50px_-12px_rgba(16,185,129,0.4)]"
       >
         {children}
       </motion.div>
@@ -67,11 +67,11 @@ export function ShopModal({
       {open && (
         <Backdrop onClose={onClose}>
           <CloseBtn onClose={onClose} />
-          <div className="border-b border-emerald-500/20 p-6">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-white">Магазин привилегий</h2>
-            <p className="mt-1 text-sm text-emerald-300/70">Выбери свой статус на сервере</p>
+          <div className="border-b border-white/5 px-4 py-3 sm:px-5">
+            <h2 className="text-base font-bold text-white">Магазин привилегий</h2>
+            <p className="mt-0.5 text-xs text-emerald-300/70">Выбери свой статус на сервере</p>
           </div>
-          <div className="grid max-h-[60vh] grid-cols-1 gap-3 overflow-y-auto p-6 sm:grid-cols-2">
+          <div className="grid max-h-[65vh] grid-cols-1 gap-2.5 overflow-y-auto p-4 sm:grid-cols-2">
             {products.map((p, i) => (
               <motion.div
                 key={p.id}
@@ -136,10 +136,10 @@ export function CartModal({
       {open && (
         <Backdrop onClose={onClose}>
           <CloseBtn onClose={onClose} />
-          <div className="border-b border-emerald-500/20 p-6">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-white">Корзина</h2>
+          <div className="border-b border-white/5 px-4 py-3 sm:px-5">
+            <h2 className="text-base font-bold text-white">Корзина</h2>
           </div>
-          <div className="max-h-[50vh] overflow-y-auto p-6">
+          <div className="max-h-[55vh] overflow-y-auto p-4 sm:p-5">
             {items.length === 0 ? (
               <div className="py-12 text-center text-neutral-400">
                 <Icon name="ShoppingCart" size={40} className="mx-auto mb-3 text-emerald-500/40" />
@@ -181,10 +181,10 @@ export function CartModal({
             )}
           </div>
           {items.length > 0 && (
-            <div className="border-t border-emerald-500/20 p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-neutral-400">Итого:</span>
-                <span className="font-display text-2xl font-bold text-emerald-300">{total} ₽</span>
+            <div className="border-t border-white/5 p-4 sm:p-5">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm text-neutral-400">Итого:</span>
+                <span className="text-xl font-bold text-emerald-300">{total} ₽</span>
               </div>
               <div className="flex gap-3">
                 <Button

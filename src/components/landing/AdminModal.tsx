@@ -60,13 +60,13 @@ export function AdminModal({ open, onClose, currentUser }: Props) {
   ]
 
   return (
-    <ModalShell open={open} onClose={onClose} maxWidth="max-w-3xl">
-      <div className="border-b border-emerald-500/20 px-6 py-4">
-        <h2 className="font-display text-lg text-white">Панель управления</h2>
-        <div className="mt-3 flex flex-wrap gap-2">
+    <ModalShell open={open} onClose={onClose} maxWidth="max-w-2xl">
+      <div className="border-b border-white/5 px-4 py-3 sm:px-6">
+        <h2 className="text-base font-bold text-white">Панель управления</h2>
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
           {tabs.filter(t => t.show).map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all ${tab === t.key ? 'bg-emerald-500 text-black' : 'border border-[#1a3a1a] text-neutral-400 hover:text-white'}`}
+              className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${tab === t.key ? 'bg-emerald-500 text-black' : 'border border-[#1a3a1a] text-neutral-400 hover:text-white'}`}
             >
               <Icon name={t.icon} size={14} />{t.label}
             </button>
@@ -74,7 +74,7 @@ export function AdminModal({ open, onClose, currentUser }: Props) {
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-5">
         {tab === 'users' && (
           <div className="space-y-3">
             {users.map(u => {
@@ -204,21 +204,33 @@ function PrivilegesEditor({ settings, onChange }: { settings: Partial<SiteSettin
   return (
     <div className="space-y-3">
       {list.map((p, i) => (
-        <div key={p.id} className="space-y-2 rounded-xl border border-[#1a3a1a] bg-black/20 p-3">
+        <div key={p.id} className="space-y-3 rounded-xl border border-[#1a3a1a] bg-black/20 p-3">
+          {/* Аватарка */}
+          <ImageUpload label="Аватарка привилегии" value={p.image || ''} onChange={v => upd(i, { image: v })} size={56} />
           <div className="flex gap-2">
             <input value={p.name} onChange={e => upd(i, { name: e.target.value })} placeholder="Название"
               className="flex-1 rounded-lg border border-[#1a3a1a] bg-black/40 px-3 py-2 text-sm font-bold text-white outline-none" style={{ color: p.color }} />
             <input value={p.price} onChange={e => upd(i, { price: parseInt(e.target.value) || 0 })} type="number" placeholder="₽"
-              className="w-24 rounded-lg border border-[#1a3a1a] bg-black/40 px-3 py-2 text-sm text-white outline-none" />
+              className="w-20 rounded-lg border border-[#1a3a1a] bg-black/40 px-3 py-2 text-sm text-white outline-none" />
             <input type="color" value={p.color} onChange={e => upd(i, { color: e.target.value })}
               className="h-9 w-9 cursor-pointer rounded-lg border border-[#1a3a1a] bg-transparent" />
           </div>
           <textarea value={p.desc} onChange={e => upd(i, { desc: e.target.value })} rows={2} placeholder="Описание"
             className="w-full resize-none rounded-lg border border-[#1a3a1a] bg-black/40 px-3 py-2 text-sm text-neutral-300 outline-none" />
+          {/* Список возможностей */}
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Что входит (каждая строка — отдельный пункт)</label>
+            <textarea
+              value={(p.features || []).join('\n')}
+              onChange={e => upd(i, { features: e.target.value.split('\n').filter(Boolean) })}
+              rows={3} placeholder={'/kit ' + p.name.toLowerCase() + '\nПрефикс в чате\nПриоритет входа'}
+              className="w-full resize-none rounded-lg border border-[#1a3a1a] bg-black/40 px-3 py-2 text-sm text-neutral-300 outline-none"
+            />
+          </div>
           <button onClick={() => save(list.filter((_, idx) => idx !== i))} className="text-xs text-red-400 hover:underline">Удалить привилегию</button>
         </div>
       ))}
-      <button onClick={() => save([...list, { id: `p${Date.now()}`, name: 'НОВАЯ', color: '#4ade80', price: 99, desc: '' }])}
+      <button onClick={() => save([...list, { id: `p${Date.now()}`, name: 'НОВАЯ', color: '#4ade80', price: 99, desc: '', image: '', features: [] }])}
         className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-emerald-500/40 py-3 text-sm text-emerald-400 hover:bg-emerald-500/5">
         <Icon name="Plus" size={15} />Добавить привилегию
       </button>
@@ -280,7 +292,7 @@ function ShopEditor({ settings, onChange }: { settings: Partial<SiteSettings>; o
   )
 }
 
-function ItemList<T extends { id: string; image?: string } & Record<string, unknown>>({ items, fields, hasImage, onSave, empty }: {
+function ItemList<T extends { id: string; image?: string; features?: string[] } & Record<string, unknown>>({ items, fields, hasImage, onSave, empty }: {
   items: T[]; fields: string[]; hasImage?: boolean; onSave: (i: T[]) => void; empty: T
 }) {
   const upd = (i: number, patch: Partial<T>) => onSave(items.map((it, idx) => idx === i ? { ...it, ...patch } : it))
@@ -289,17 +301,26 @@ function ItemList<T extends { id: string; image?: string } & Record<string, unkn
     <div className="space-y-3">
       {items.map((it, i) => (
         <div key={it.id} className="space-y-2 rounded-xl border border-[#1a3a1a] bg-black/20 p-3">
-          {hasImage && <ImageUpload value={it.image || ''} onChange={v => upd(i, { image: v } as Partial<T>)} size={48} />}
+          {hasImage && <ImageUpload label="Картинка товара" value={it.image || ''} onChange={v => upd(i, { image: v } as Partial<T>)} size={52} />}
           {fields.map(f => (
             <input key={f} value={String(it[f] ?? '')} placeholder={labels[f] || f}
               type={f === 'price' ? 'number' : 'text'}
               onChange={e => upd(i, { [f]: f === 'price' ? (parseInt(e.target.value) || 0) : e.target.value } as Partial<T>)}
               className="w-full rounded-lg border border-[#1a3a1a] bg-black/40 px-3 py-2 text-sm text-white outline-none" />
           ))}
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Что входит (каждая строка — пункт в окне товара)</label>
+            <textarea
+              value={(it.features || []).join('\n')}
+              onChange={e => upd(i, { features: e.target.value.split('\n').filter(Boolean) } as Partial<T>)}
+              rows={2} placeholder="Пример пункта 1&#10;Пример пункта 2"
+              className="w-full resize-none rounded-lg border border-[#1a3a1a] bg-black/40 px-3 py-2 text-sm text-neutral-300 outline-none"
+            />
+          </div>
           <button onClick={() => onSave(items.filter((_, idx) => idx !== i))} className="text-xs text-red-400 hover:underline">Удалить</button>
         </div>
       ))}
-      <button onClick={() => onSave([...items, { ...empty, id: `i${Date.now()}` }])}
+      <button onClick={() => onSave([...items, { ...empty, id: `i${Date.now()}`, features: [] }])}
         className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-emerald-500/40 py-3 text-sm text-emerald-400 hover:bg-emerald-500/5">
         <Icon name="Plus" size={15} />Добавить товар
       </button>

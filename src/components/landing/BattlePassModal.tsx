@@ -47,8 +47,8 @@ export function BattlePassModal({ open, onClose, settings, user, onBuy }: Props)
   const pct = Math.round((completed / QUESTS.length) * 100)
 
   return (
-    <ModalShell open={open} onClose={onClose} title="Battle Pass" icon="Swords" maxWidth="max-w-xl">
-      <div className="p-6">
+    <ModalShell open={open} onClose={onClose} title="Battle Pass" icon="Swords" maxWidth="max-w-sm">
+      <div className="p-4 sm:p-5">
         {!hasPass ? (
           <BuyScreen price={bp.price} levels={bp.levels} onBuy={() => {
             onBuy({ id: 'battlepass', name: 'Battle Pass', description: 'Сезонный пропуск с заданиями и наградами', price: bp.price, icon: 'Swords', color: '#fb923c' })
